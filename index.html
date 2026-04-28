@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bcrypt Password Hash Generator</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        padding: 40px;
+        max-width: 600px;
+        width: 100%;
+      }
+
+      h1 {
+        color: #333;
+        margin-bottom: 10px;
+        font-size: 28px;
+        text-align: center;
+      }
+
+      .subtitle {
+        color: #666;
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 14px;
+      }
+
+      .form-group {
+        margin-bottom: 25px;
+      }
+
+      label {
+        display: block;
+        color: #333;
+        font-weight: 600;
+        margin-bottom: 8px;
+        font-size: 14px;
+      }
+
+      input[type="text"],
+      input[type="password"],
+      select {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 15px;
+        transition: all 0.3s;
+        font-family: inherit;
+      }
+
+      input[type="text"]:focus,
+      input[type="password"]:focus,
+      select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .password-input-wrapper {
+        position: relative;
+      }
+
+      /* FIX 1: Tambah padding-right agar teks tidak tertimpa tombol toggle */
+      .password-input-wrapper input {
+        padding-right: 50px;
+      }
+
+      .toggle-password {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 18px;
+        color: #666;
+        padding: 5px;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .toggle-password:hover {
+        color: #667eea;
+      }
+
+      button {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+      }
+
+      button:active {
+        transform: translateY(0);
+      }
+
+      button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .result-container {
+        margin-top: 30px;
+        display: none;
+      }
+
+      .result-box {
+        background: #f8f9fa;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+      }
+
+      .result-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .result-value {
+        background: white;
+        padding: 12px;
+        padding-right: 80px; /* ruang untuk tombol copy */
+        border-radius: 8px;
+        font-family: "Courier New", monospace;
+        font-size: 13px;
+        word-break: break-all;
+        color: #2c3e50;
+        border: 1px solid #e0e0e0;
+        position: relative;
+      }
+
+      .copy-btn {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.3s;
+        width: auto;
+        text-transform: none;
+        letter-spacing: 0;
+        font-weight: normal;
+      }
+
+      .copy-btn:hover {
+        background: #764ba2;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .copy-btn.copied {
+        background: #10b981;
+      }
+
+      .sql-query {
+        background: #2c3e50;
+        color: #ecf0f1;
+        padding: 15px;
+        padding-right: 80px; /* ruang untuk tombol copy */
+        border-radius: 8px;
+        font-family: "Courier New", monospace;
+        font-size: 13px;
+        white-space: pre-wrap;
+        word-break: break-all;
+        position: relative;
+        margin-top: 10px;
+      }
+
+      .info-box {
+        background: #e3f2fd;
+        border-left: 4px solid #2196f3;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+        font-size: 13px;
+        color: #1565c0;
+      }
+
+      .info-box strong {
+        display: block;
+        margin-bottom: 5px;
+      }
+
+      .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s linear infinite;
+        margin-left: 10px;
+        vertical-align: middle;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .strength-meter {
+        height: 8px;
+        background: #e0e0e0;
+        border-radius: 4px;
+        margin-top: 8px;
+        overflow: hidden;
+      }
+
+      .strength-bar {
+        height: 100%;
+        transition: all 0.3s;
+        border-radius: 4px;
+      }
+
+      .strength-text {
+        font-size: 12px;
+        margin-top: 5px;
+        color: #666;
+      }
+
+      @media (max-width: 600px) {
+        .container {
+          padding: 25px;
+        }
+
+        h1 {
+          font-size: 24px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔐 Bcrypt Password Generator</h1>
+      <p class="subtitle">
+        Generate secure bcrypt hash untuk reset password database Anda
+      </p>
+
+      <form id="passwordForm">
+        <div class="form-group">
+          <label for="password">Password Baru</label>
+          <div class="password-input-wrapper">
+            <input
+              type="password"
+              id="password"
+              placeholder="Masukkan password baru"
+              required
+              autocomplete="off"
+            />
+            <!-- FIX 2: Pass `this` ke fungsi agar tidak bergantung pada global event object -->
+            <button
+              type="button"
+              class="toggle-password"
+              onclick="togglePassword(this)"
+            >
+              👁️
+            </button>
+          </div>
+          <div class="strength-meter">
+            <div class="strength-bar" id="strengthBar"></div>
+          </div>
+          <div class="strength-text" id="strengthText"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="rounds">Salt Rounds (Tingkat Keamanan)</label>
+          <select id="rounds">
+            <option value="10" selected>10 (Recommended - Cepat & Aman)</option>
+            <option value="12">12 (Lebih Aman, Lebih Lambat)</option>
+            <option value="8">8 (Cepat, Kurang Aman)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email User (untuk SQL query)</label>
+          <input
+            type="text"
+            id="email"
+            value="athayanaufalbrasta@gmail.com"
+            placeholder="Email pengguna"
+          />
+        </div>
+
+        <button type="submit" id="generateBtn">Generate Hash</button>
+      </form>
+
+      <div class="result-container" id="resultContainer">
+        <div class="result-box">
+          <div class="result-label">Password (Plain Text)</div>
+          <div class="result-value">
+            <!-- FIX 3: Arahkan copy ke id span yang benar (plainPasswordText), bukan div container -->
+            <button
+              class="copy-btn"
+              onclick="copyToClipboard('plainPasswordText', this)"
+            >
+              Copy
+            </button>
+            <span id="plainPasswordText"></span>
+          </div>
+        </div>
+
+        <div class="result-box">
+          <div class="result-label">Bcrypt Hash</div>
+          <div class="result-value">
+            <button
+              class="copy-btn"
+              onclick="copyToClipboard('hashedPasswordText', this)"
+            >
+              Copy
+            </button>
+            <span id="hashedPasswordText"></span>
+          </div>
+        </div>
+
+        <div class="result-box">
+          <div class="result-label">SQL Update Query</div>
+          <div class="sql-query">
+            <button
+              class="copy-btn"
+              onclick="copyToClipboard('sqlQueryText', this)"
+            >
+              Copy
+            </button>
+            <span id="sqlQueryText"></span>
+          </div>
+        </div>
+
+        <div class="info-box">
+          <strong>📋 Cara Menggunakan:</strong>
+          1. Copy SQL query di atas<br />
+          2. Buka phpMyAdmin atau MySQL client Anda<br />
+          3. Paste dan jalankan query tersebut<br />
+          4. Login dengan email dan password baru yang Anda buat
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
+    <script>
+      // FIX: bcryptjs dari cdnjs mengekspos global sebagai dcodeIO.bcrypt, bukan bcrypt langsung
+      const bcrypt = window.bcrypt || (window.dcodeIO && window.dcodeIO.bcrypt);
+
+      const passwordInput = document.getElementById("password");
+      const strengthBar = document.getElementById("strengthBar");
+      const strengthText = document.getElementById("strengthText");
+
+      // Password strength checker
+      passwordInput.addEventListener("input", function () {
+        const password = this.value;
+        const strength = checkPasswordStrength(password);
+
+        strengthBar.style.width = strength.percentage + "%";
+        strengthBar.style.background = strength.color;
+        strengthText.textContent = strength.text;
+        strengthText.style.color = strength.color;
+      });
+
+      function checkPasswordStrength(password) {
+        let strength = 0;
+
+        if (password.length >= 8) strength += 25;
+        if (password.length >= 12) strength += 25;
+        if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength += 20;
+        if (/\d/.test(password)) strength += 15;
+        if (/[^a-zA-Z0-9]/.test(password)) strength += 15;
+
+        if (strength <= 25) {
+          return {
+            percentage: strength,
+            color: "#f44336",
+            text: "Lemah - Tambah karakter & variasi",
+          };
+        } else if (strength <= 50) {
+          return {
+            percentage: strength,
+            color: "#ff9800",
+            text: "Sedang - Bisa lebih baik",
+          };
+        } else if (strength <= 75) {
+          return {
+            percentage: strength,
+            color: "#2196f3",
+            text: "Baik - Sudah cukup aman",
+          };
+        } else {
+          return {
+            percentage: strength,
+            color: "#4caf50",
+            text: "Kuat - Sangat aman!",
+          };
+        }
+      }
+
+      // FIX 2: Terima parameter `btn` langsung, tidak pakai global event object
+      function togglePassword(btn) {
+        const input = document.getElementById("password");
+
+        if (input.type === "password") {
+          input.type = "text";
+          btn.textContent = "🙈";
+        } else {
+          input.type = "password";
+          btn.textContent = "👁️";
+        }
+      }
+
+      document
+        .getElementById("passwordForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const password = document.getElementById("password").value;
+          const rounds = parseInt(document.getElementById("rounds").value);
+          const email = document.getElementById("email").value;
+          const generateBtn = document.getElementById("generateBtn");
+
+          // Disable button and show loading
+          generateBtn.disabled = true;
+          generateBtn.innerHTML = 'Generating <span class="loading"></span>';
+
+          try {
+            // Generate bcrypt hash
+            const hash = await bcrypt.hash(password, rounds);
+
+            // Show results
+            document.getElementById("plainPasswordText").textContent = password;
+            document.getElementById("hashedPasswordText").textContent = hash;
+
+            const sqlQuery = `UPDATE \`users\` \nSET \`password_hash\` = '${hash}'\nWHERE \`email\` = '${email}';`;
+
+            document.getElementById("sqlQueryText").textContent = sqlQuery;
+
+            // Show result container
+            document.getElementById("resultContainer").style.display = "block";
+
+            // Scroll to results
+            document
+              .getElementById("resultContainer")
+              .scrollIntoView({ behavior: "smooth" });
+          } catch (error) {
+            alert("Error generating hash: " + error.message);
+          } finally {
+            // Re-enable button
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = "Generate Hash";
+          }
+        });
+
+      // FIX 3: Ambil teks dari span (bukan div container) sehingga yang ter-copy hanya teks hasil, bukan "Copy" button
+      function copyToClipboard(elementId, button) {
+        const element = document.getElementById(elementId);
+        const text = element.textContent;
+
+        navigator.clipboard
+          .writeText(text)
+          .then(() => {
+            const originalText = button.textContent;
+            button.textContent = "✓ Copied!";
+            button.classList.add("copied");
+
+            setTimeout(() => {
+              button.textContent = originalText;
+              button.classList.remove("copied");
+            }, 2000);
+          })
+          .catch((err) => {
+            alert("Failed to copy: " + err);
+          });
+      }
+
+      // Auto focus on password input
+      window.addEventListener("load", () => {
+        document.getElementById("password").focus();
+      });
+    </script>
+  </body>
+</html>
